@@ -13,8 +13,7 @@ from popsynth.aux_samplers.plaw_aux_sampler import (
     PowerLawAuxSampler,
 )
 from popsynth.aux_samplers.trunc_normal_aux_sampler import (
-    TruncatedNormalAuxSampler,
-)
+    TruncatedNormalAuxSampler, )
 
 
 def test_constructor():
@@ -44,9 +43,7 @@ def test_constructor():
 
 
 @given(
-    st.floats(
-        min_value=0.01,
-    ),
+    st.floats(min_value=0.01, ),
     st.floats(min_value=0.01, max_value=10.0),
     st.integers(min_value=2, max_value=1000),
 )
