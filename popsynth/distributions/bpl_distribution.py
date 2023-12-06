@@ -45,14 +45,13 @@ class BPLDistribution(LuminosityDistribution):
                                               form=lf_form)
 
     def phi(self, L):
-        f = lambda ll: bpl(ll, self.Lmin, self.Lbreak, self.Lmax, self.alpha,
-                           self.beta)
-
-        integrand = integrate.quad(f, self.Lmin, self.Lmax)[0]
-
         # normalize
+        _, _, total = integrate_pl(self.Lmin, self.Lbreak, self.Lmax,
+                                   self.alpha, self.beta)
 
-        return f(L) / integrand
+        return (
+            bpl(L, self.Lmin, self.Lbreak, self.Lmax, self.alpha, self.beta) /
+            total)
 
     def draw_luminosity(self, size=1):
         u = np.atleast_1d(np.random.uniform(size=size))
