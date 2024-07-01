@@ -1,6 +1,4 @@
-
 # Version: 0.29
-
 """The Versioneer - like a rocketeer, but for versions.
 
 The Versioneer
@@ -352,21 +350,15 @@ def get_root() -> str:
     setup_py = os.path.join(root, "setup.py")
     pyproject_toml = os.path.join(root, "pyproject.toml")
     versioneer_py = os.path.join(root, "versioneer.py")
-    if not (
-        os.path.exists(setup_py)
-        or os.path.exists(pyproject_toml)
-        or os.path.exists(versioneer_py)
-    ):
+    if not (os.path.exists(setup_py) or os.path.exists(pyproject_toml)
+            or os.path.exists(versioneer_py)):
         # allow 'python path/to/setup.py COMMAND'
         root = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
         setup_py = os.path.join(root, "setup.py")
         pyproject_toml = os.path.join(root, "pyproject.toml")
         versioneer_py = os.path.join(root, "versioneer.py")
-    if not (
-        os.path.exists(setup_py)
-        or os.path.exists(pyproject_toml)
-        or os.path.exists(versioneer_py)
-    ):
+    if not (os.path.exists(setup_py) or os.path.exists(pyproject_toml)
+            or os.path.exists(versioneer_py)):
         err = ("Versioneer was unable to run the project root directory. "
                "Versioneer requires setup.py to be executed from "
                "its immediate directory (like 'python setup.py COMMAND'), "
@@ -384,8 +376,8 @@ def get_root() -> str:
         me_dir = os.path.normcase(os.path.splitext(my_path)[0])
         vsr_dir = os.path.normcase(os.path.splitext(versioneer_py)[0])
         if me_dir != vsr_dir and "VERSIONEER_PEP518" not in globals():
-            print("Warning: build in %s is using versioneer.py from %s"
-                  % (os.path.dirname(my_path), versioneer_py))
+            print("Warning: build in %s is using versioneer.py from %s" %
+                  (os.path.dirname(my_path), versioneer_py))
     except NameError:
         pass
     return root
@@ -450,10 +442,12 @@ HANDLERS: Dict[str, Dict[str, Callable]] = {}
 
 def register_vcs_handler(vcs: str, method: str) -> Callable:  # decorator
     """Create decorator to mark a method as the handler of a VCS."""
+
     def decorate(f: Callable) -> Callable:
         """Store f in HANDLERS[vcs][method]."""
         HANDLERS.setdefault(vcs, {})[method] = f
         return f
+
     return decorate
 
 
@@ -480,10 +474,13 @@ def run_command(
         try:
             dispcmd = str([command] + args)
             # remember shell=False, so use git.cmd on windows, not just git
-            process = subprocess.Popen([command] + args, cwd=cwd, env=env,
-                                       stdout=subprocess.PIPE,
-                                       stderr=(subprocess.PIPE if hide_stderr
-                                               else None), **popen_kwargs)
+            process = subprocess.Popen(
+                [command] + args,
+                cwd=cwd,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=(subprocess.PIPE if hide_stderr else None),
+                **popen_kwargs)
             break
         except OSError as e:
             if e.errno == errno.ENOENT:
@@ -494,7 +491,7 @@ def run_command(
             return None, None
     else:
         if verbose:
-            print("unable to find command, tried %s" % (commands,))
+            print("unable to find command, tried %s" % (commands, ))
         return None, None
     stdout = process.communicate()[0].strip().decode()
     if process.returncode != 0:
@@ -1275,25 +1272,30 @@ def git_versions_from_keywords(
                 continue
             if verbose:
                 print("picking %s" % r)
-            return {"version": r,
-                    "full-revisionid": keywords["full"].strip(),
-                    "dirty": False, "error": None,
-                    "date": date}
+            return {
+                "version": r,
+                "full-revisionid": keywords["full"].strip(),
+                "dirty": False,
+                "error": None,
+                "date": date
+            }
     # no suitable tags, so version is "0+unknown", but full hex is still there
     if verbose:
         print("no suitable tags, using unknown + full revision id")
-    return {"version": "0+unknown",
-            "full-revisionid": keywords["full"].strip(),
-            "dirty": False, "error": "no suitable tags", "date": None}
+    return {
+        "version": "0+unknown",
+        "full-revisionid": keywords["full"].strip(),
+        "dirty": False,
+        "error": "no suitable tags",
+        "date": None
+    }
 
 
 @register_vcs_handler("git", "pieces_from_vcs")
-def git_pieces_from_vcs(
-    tag_prefix: str,
-    root: str,
-    verbose: bool,
-    runner: Callable = run_command
-) -> Dict[str, Any]:
+def git_pieces_from_vcs(tag_prefix: str,
+                        root: str,
+                        verbose: bool,
+                        runner: Callable = run_command) -> Dict[str, Any]:
     """Get version from 'git describe' in the root of the source tree.
 
     This only gets called if the git-archive 'subst' keywords were *not*
@@ -1311,7 +1313,8 @@ def git_pieces_from_vcs(
     env.pop("GIT_DIR", None)
     runner = functools.partial(runner, env=env)
 
-    _, rc = runner(GITS, ["rev-parse", "--git-dir"], cwd=root,
+    _, rc = runner(GITS, ["rev-parse", "--git-dir"],
+                   cwd=root,
                    hide_stderr=not verbose)
     if rc != 0:
         if verbose:
@@ -1321,9 +1324,10 @@ def git_pieces_from_vcs(
     # if there is a tag matching tag_prefix, this yields TAG-NUM-gHEX[-dirty]
     # if there isn't one, this yields HEX[-dirty] (no NUM)
     describe_out, rc = runner(GITS, [
-        "describe", "--tags", "--dirty", "--always", "--long",
-        "--match", f"{tag_prefix}[[:digit:]]*"
-    ], cwd=root)
+        "describe", "--tags", "--dirty", "--always", "--long", "--match",
+        f"{tag_prefix}[[:digit:]]*"
+    ],
+                              cwd=root)
     # --long was added in git-1.5.5
     if describe_out is None:
         raise NotThisMethod("'git describe' failed")
@@ -1388,8 +1392,8 @@ def git_pieces_from_vcs(
         mo = re.search(r'^(.+)-(\d+)-g([0-9a-f]+)$', git_describe)
         if not mo:
             # unparsable. Maybe git-describe is misbehaving?
-            pieces["error"] = ("unable to parse git-describe output: '%s'"
-                               % describe_out)
+            pieces["error"] = ("unable to parse git-describe output: '%s'" %
+                               describe_out)
             return pieces
 
         # tag
@@ -1398,8 +1402,8 @@ def git_pieces_from_vcs(
             if verbose:
                 fmt = "tag '%s' doesn't start with prefix '%s'"
                 print(fmt % (full_tag, tag_prefix))
-            pieces["error"] = ("tag '%s' doesn't start with prefix '%s'"
-                               % (full_tag, tag_prefix))
+            pieces["error"] = ("tag '%s' doesn't start with prefix '%s'" %
+                               (full_tag, tag_prefix))
             return pieces
         pieces["closest-tag"] = full_tag[len(tag_prefix):]
 
@@ -1416,7 +1420,8 @@ def git_pieces_from_vcs(
         pieces["distance"] = len(out.split())  # total number of commits
 
     # commit date: see ISO-8601 comment in git_versions_from_keywords()
-    date = runner(GITS, ["show", "-s", "--format=%ci", "HEAD"], cwd=root)[0].strip()
+    date = runner(GITS, ["show", "-s", "--format=%ci", "HEAD"],
+                  cwd=root)[0].strip()
     # Use only the last line.  Previous lines may contain GPG signature
     # information.
     date = date.splitlines()[-1]
@@ -1479,9 +1484,13 @@ def versions_from_parentdir(
     for _ in range(3):
         dirname = os.path.basename(root)
         if dirname.startswith(parentdir_prefix):
-            return {"version": dirname[len(parentdir_prefix):],
-                    "full-revisionid": None,
-                    "dirty": False, "error": None, "date": None}
+            return {
+                "version": dirname[len(parentdir_prefix):],
+                "full-revisionid": None,
+                "dirty": False,
+                "error": None,
+                "date": None
+            }
         rootdirs.append(root)
         root = os.path.dirname(root)  # up a level
 
@@ -1528,8 +1537,10 @@ def versions_from_file(filename: str) -> Dict[str, Any]:
 
 def write_to_version_file(filename: str, versions: Dict[str, Any]) -> None:
     """Write the given version number to the given _version.py file."""
-    contents = json.dumps(versions, sort_keys=True,
-                          indent=1, separators=(",", ": "))
+    contents = json.dumps(versions,
+                          sort_keys=True,
+                          indent=1,
+                          separators=(",", ": "))
     with open(filename, "w") as f:
         f.write(SHORT_VERSION_PY % contents)
 
@@ -1561,8 +1572,7 @@ def render_pep440(pieces: Dict[str, Any]) -> str:
                 rendered += ".dirty"
     else:
         # exception #1
-        rendered = "0+untagged.%d.g%s" % (pieces["distance"],
-                                          pieces["short"])
+        rendered = "0+untagged.%d.g%s" % (pieces["distance"], pieces["short"])
         if pieces["dirty"]:
             rendered += ".dirty"
     return rendered
@@ -1591,8 +1601,7 @@ def render_pep440_branch(pieces: Dict[str, Any]) -> str:
         rendered = "0"
         if pieces["branch"] != "master":
             rendered += ".dev0"
-        rendered += "+untagged.%d.g%s" % (pieces["distance"],
-                                          pieces["short"])
+        rendered += "+untagged.%d.g%s" % (pieces["distance"], pieces["short"])
         if pieces["dirty"]:
             rendered += ".dirty"
     return rendered
@@ -1617,10 +1626,12 @@ def render_pep440_pre(pieces: Dict[str, Any]) -> str:
     if pieces["closest-tag"]:
         if pieces["distance"]:
             # update the post release segment
-            tag_version, post_version = pep440_split_post(pieces["closest-tag"])
+            tag_version, post_version = pep440_split_post(
+                pieces["closest-tag"])
             rendered = tag_version
             if post_version is not None:
-                rendered += ".post%d.dev%d" % (post_version + 1, pieces["distance"])
+                rendered += ".post%d.dev%d" % (post_version + 1,
+                                               pieces["distance"])
             else:
                 rendered += ".post0.dev%d" % (pieces["distance"])
         else:
@@ -1753,11 +1764,13 @@ def render_git_describe_long(pieces: Dict[str, Any]) -> str:
 def render(pieces: Dict[str, Any], style: str) -> Dict[str, Any]:
     """Render the given version pieces into the requested style."""
     if pieces["error"]:
-        return {"version": "unknown",
-                "full-revisionid": pieces.get("long"),
-                "dirty": None,
-                "error": pieces["error"],
-                "date": None}
+        return {
+            "version": "unknown",
+            "full-revisionid": pieces.get("long"),
+            "dirty": None,
+            "error": pieces["error"],
+            "date": None
+        }
 
     if not style or style == "default":
         style = "pep440"  # the default
@@ -1781,9 +1794,13 @@ def render(pieces: Dict[str, Any], style: str) -> Dict[str, Any]:
     else:
         raise ValueError("unknown style '%s'" % style)
 
-    return {"version": rendered, "full-revisionid": pieces["long"],
-            "dirty": pieces["dirty"], "error": None,
-            "date": pieces.get("date")}
+    return {
+        "version": rendered,
+        "full-revisionid": pieces["long"],
+        "dirty": pieces["dirty"],
+        "error": None,
+        "date": pieces.get("date")
+    }
 
 
 class VersioneerBadRootError(Exception):
@@ -1861,9 +1878,13 @@ def get_versions(verbose: bool = False) -> Dict[str, Any]:
     if verbose:
         print("unable to compute version")
 
-    return {"version": "0+unknown", "full-revisionid": None,
-            "dirty": None, "error": "unable to compute version",
-            "date": None}
+    return {
+        "version": "0+unknown",
+        "full-revisionid": None,
+        "dirty": None,
+        "error": "unable to compute version",
+        "date": None
+    }
 
 
 def get_version() -> str:
@@ -1916,6 +1937,7 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
             print(" date: %s" % vers.get("date"))
             if vers["error"]:
                 print(" error: %s" % vers["error"])
+
     cmds["version"] = cmd_version
 
     # we override "build_py" in setuptools
@@ -1943,6 +1965,7 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
         from setuptools.command.build_py import build_py as _build_py
 
     class cmd_build_py(_build_py):
+
         def run(self) -> None:
             root = get_root()
             cfg = get_config_from_root(root)
@@ -1959,6 +1982,7 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
                                                   cfg.versionfile_build)
                 print("UPDATING %s" % target_versionfile)
                 write_to_version_file(target_versionfile, versions)
+
     cmds["build_py"] = cmd_build_py
 
     if 'build_ext' in cmds:
@@ -1967,6 +1991,7 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
         from setuptools.command.build_ext import build_ext as _build_ext
 
     class cmd_build_ext(_build_ext):
+
         def run(self) -> None:
             root = get_root()
             cfg = get_config_from_root(root)
@@ -1985,16 +2010,19 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
             target_versionfile = os.path.join(self.build_lib,
                                               cfg.versionfile_build)
             if not os.path.exists(target_versionfile):
-                print(f"Warning: {target_versionfile} does not exist, skipping "
-                      "version update. This can happen if you are running build_ext "
-                      "without first running build_py.")
+                print(
+                    f"Warning: {target_versionfile} does not exist, skipping "
+                    "version update. This can happen if you are running build_ext "
+                    "without first running build_py.")
                 return
             print("UPDATING %s" % target_versionfile)
             write_to_version_file(target_versionfile, versions)
+
     cmds["build_ext"] = cmd_build_ext
 
     if "cx_Freeze" in sys.modules:  # cx_freeze enabled?
         from cx_Freeze.dist import build_exe as _build_exe  # type: ignore
+
         # nczeczulin reports that py2exe won't like the pep440-style string
         # as FILEVERSION, but it can be used for PRODUCTVERSION, e.g.
         # setup(console=[{
@@ -2003,6 +2031,7 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
         #   ...
 
         class cmd_build_exe(_build_exe):
+
             def run(self) -> None:
                 root = get_root()
                 cfg = get_config_from_root(root)
@@ -2015,13 +2044,15 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
                 os.unlink(target_versionfile)
                 with open(cfg.versionfile_source, "w") as f:
                     LONG = LONG_VERSION_PY[cfg.VCS]
-                    f.write(LONG %
-                            {"DOLLAR": "$",
-                             "STYLE": cfg.style,
-                             "TAG_PREFIX": cfg.tag_prefix,
-                             "PARENTDIR_PREFIX": cfg.parentdir_prefix,
-                             "VERSIONFILE_SOURCE": cfg.versionfile_source,
-                             })
+                    f.write(
+                        LONG % {
+                            "DOLLAR": "$",
+                            "STYLE": cfg.style,
+                            "TAG_PREFIX": cfg.tag_prefix,
+                            "PARENTDIR_PREFIX": cfg.parentdir_prefix,
+                            "VERSIONFILE_SOURCE": cfg.versionfile_source,
+                        })
+
         cmds["build_exe"] = cmd_build_exe
         del cmds["build_py"]
 
@@ -2032,6 +2063,7 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
             from py2exe.distutils_buildexe import py2exe as _py2exe  # type: ignore
 
         class cmd_py2exe(_py2exe):
+
             def run(self) -> None:
                 root = get_root()
                 cfg = get_config_from_root(root)
@@ -2044,13 +2076,15 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
                 os.unlink(target_versionfile)
                 with open(cfg.versionfile_source, "w") as f:
                     LONG = LONG_VERSION_PY[cfg.VCS]
-                    f.write(LONG %
-                            {"DOLLAR": "$",
-                             "STYLE": cfg.style,
-                             "TAG_PREFIX": cfg.tag_prefix,
-                             "PARENTDIR_PREFIX": cfg.parentdir_prefix,
-                             "VERSIONFILE_SOURCE": cfg.versionfile_source,
-                             })
+                    f.write(
+                        LONG % {
+                            "DOLLAR": "$",
+                            "STYLE": cfg.style,
+                            "TAG_PREFIX": cfg.tag_prefix,
+                            "PARENTDIR_PREFIX": cfg.parentdir_prefix,
+                            "VERSIONFILE_SOURCE": cfg.versionfile_source,
+                        })
+
         cmds["py2exe"] = cmd_py2exe
 
     # sdist farms its file list building out to egg_info
@@ -2060,6 +2094,7 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
         from setuptools.command.egg_info import egg_info as _egg_info
 
     class cmd_egg_info(_egg_info):
+
         def find_sources(self) -> None:
             # egg_info.find_sources builds the manifest list and writes it
             # in one shot
@@ -2081,8 +2116,10 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
             # We will instead replicate their final normalization (to unicode,
             # and POSIX-style paths)
             from setuptools import unicode_utils
-            normalized = [unicode_utils.filesys_decode(f).replace(os.sep, '/')
-                          for f in self.filelist.files]
+            normalized = [
+                unicode_utils.filesys_decode(f).replace(os.sep, '/')
+                for f in self.filelist.files
+            ]
 
             manifest_filename = os.path.join(self.egg_info, 'SOURCES.txt')
             with open(manifest_filename, 'w') as fobj:
@@ -2097,6 +2134,7 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
         from setuptools.command.sdist import sdist as _sdist
 
     class cmd_sdist(_sdist):
+
         def run(self) -> None:
             versions = get_versions()
             self._versioneer_generated_versions = versions
@@ -2116,6 +2154,7 @@ def get_cmdclass(cmdclass: Optional[Dict[str, Any]] = None):
             print("UPDATING %s" % target_versionfile)
             write_to_version_file(target_versionfile,
                                   self._versioneer_generated_versions)
+
     cmds["sdist"] = cmd_sdist
 
     return cmds
@@ -2188,15 +2227,16 @@ def do_setup() -> int:
     print(" creating %s" % cfg.versionfile_source)
     with open(cfg.versionfile_source, "w") as f:
         LONG = LONG_VERSION_PY[cfg.VCS]
-        f.write(LONG % {"DOLLAR": "$",
-                        "STYLE": cfg.style,
-                        "TAG_PREFIX": cfg.tag_prefix,
-                        "PARENTDIR_PREFIX": cfg.parentdir_prefix,
-                        "VERSIONFILE_SOURCE": cfg.versionfile_source,
-                        })
+        f.write(
+            LONG % {
+                "DOLLAR": "$",
+                "STYLE": cfg.style,
+                "TAG_PREFIX": cfg.tag_prefix,
+                "PARENTDIR_PREFIX": cfg.parentdir_prefix,
+                "VERSIONFILE_SOURCE": cfg.versionfile_source,
+            })
 
-    ipy = os.path.join(os.path.dirname(cfg.versionfile_source),
-                       "__init__.py")
+    ipy = os.path.join(os.path.dirname(cfg.versionfile_source), "__init__.py")
     maybe_ipy: Optional[str] = ipy
     if os.path.exists(ipy):
         try:
