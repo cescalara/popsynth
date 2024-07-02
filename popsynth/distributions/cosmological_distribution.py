@@ -116,7 +116,7 @@ class SFRDistribution(CosmologicalDistribution):
             Affects the ``time_adjustment`` method used in cosmo calculations.
             Default is `True`.
         :type is_rate: bool
-        :param r0: The local density in units of Gpc^-3
+        :param r0: The local density in units of Gpc^-3 sr
         :type r0: :class:`DistributionParameter`
         :param a: Offset at z=0
         :type a: :class:`DistributionParameter`
